@@ -6,6 +6,7 @@ import { defaultDnsServers, getDnsClients } from './utils/dns-client';
 import asyncRetry from 'async-retry';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
+import { createAsyncMutex } from './utils/mutex';
 
 export interface DomainAliveOptions extends RegisterableDomainAliveOptions {
   resultCache?: CacheImplementation<DomainAliveResult>
@@ -45,6 +46,8 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
 
   const dnsRetryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
+  const mutex = createAsyncMutex<DomainAliveResult>();
+
   return async function isDomainAlive(domain: string): Promise<DomainAliveResult> {
     domain = toASCII(domain);
 
@@ -71,8 +74,8 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
       };
     }
 
-    return cacheApply(resultCache, domain, async () => {
-    // shuffle every time is called
+    return mutex(domain, () => cacheApply(resultCache, domain, async () => {
+      // shuffle every time is called
       const shuffledDnsClients = getDnsClients(shuffleArray(dnsServers, { copy: true }));
 
       {
@@ -137,6 +140,6 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
         registerableDomainAlive: registerableDomainAliveResult.alive,
         alive: false
       };
-    });
+    }));
   };
 }

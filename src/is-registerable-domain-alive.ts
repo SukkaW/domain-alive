@@ -8,6 +8,7 @@ import { shuffleArray } from 'foxts/shuffle-array';
 import asyncRetry from 'async-retry';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
+import { createAsyncMutex } from './utils/mutex';
 
 const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
   allowIcannDomains: true,
@@ -67,10 +68,12 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
 
   const dnsRetryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
+  const mutex = createAsyncMutex<RegisterableDomainAliveResult>();
+
   return async function isRegisterableDomainAlive(domain: string): Promise<RegisterableDomainAliveResult> {
     domain = toASCII(domain);
 
-    return cacheApply(registerableDomainResultCache, domain, async () => {
+    return mutex(domain, () => cacheApply(registerableDomainResultCache, domain, async () => {
       // Step 0: we normalize the domain and find the registerable part
 
       const registerableDomain = getDomain(domain, getRegisterableDomainTldtsOption);
@@ -145,6 +148,6 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
           alive: whoisOptions.whoisErrorCountAsAlive ?? true
         };
       }
-    });
+    }));
   };
 }
