@@ -6,6 +6,8 @@ import type { WhoisOptions } from './utils/whois';
 import type { DnsOptions } from './utils/dns-client';
 import { shuffleArray } from 'foxts/shuffle-array';
 import asyncRetry from 'async-retry';
+import { cacheApply } from './utils/cache';
+import type { CacheImplementation } from './utils/cache';
 
 const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
   allowIcannDomains: true,
@@ -24,7 +26,8 @@ const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
 
 export interface RegisterableDomainAliveOptions {
   dns?: DnsOptions,
-  whois?: WhoisOptions
+  whois?: WhoisOptions,
+  registerableDomainResultCache?: CacheImplementation<RegisterableDomainAliveResult>
 }
 
 export interface RegisterableDomainAliveResult {
@@ -45,24 +48,40 @@ const sharedNullResponse: RegisterableDomainAliveResult = Object.freeze({
  * isRegisterableDomainAlive("sukkaw.github.io"); // this will extract github.io and check that is alive or not
  * ```
  */
-export async function isRegisterableDomainAlive(domain: string, options: RegisterableDomainAliveOptions = {}): Promise<RegisterableDomainAliveResult> {
+export function createRegisterableDomainAliveChecker(options: RegisterableDomainAliveOptions = {}) {
   const {
     dns: dnsOptions = {},
-    whois: whoisOptions = {}
+    whois: whoisOptions = {},
+    registerableDomainResultCache = new Map<string, RegisterableDomainAliveResult>()
   } = options;
 
-  // Step 0: we normalize the domain and find the registerable part
+  const {
+    dnsServers = defaultDnsServers,
+    confirmations: maxConfirmations = 2,
+    maxAttempts: _maxAttempts = dnsServers.length,
+    retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout
+  } = dnsOptions;
 
-  domain = toASCII(domain);
-  const registerableDomain = getDomain(domain, getRegisterableDomainTldtsOption);
+  // each server get atmost one attempt, only less no more
+  const maxAttempts = Math.min(_maxAttempts, dnsServers.length);
 
-  if (registerableDomain === null) {
-    return sharedNullResponse;
-  }
+  const dnsRetryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
-  // Step 1: we query NS records first. If there is any NS records, we assume the domain is alive
+  return async function isRegisterableDomainAlive(domain: string): Promise<RegisterableDomainAliveResult> {
+    domain = toASCII(domain);
 
-  /*
+    return cacheApply(registerableDomainResultCache, domain, async () => {
+      // Step 0: we normalize the domain and find the registerable part
+
+      const registerableDomain = getDomain(domain, getRegisterableDomainTldtsOption);
+
+      if (registerableDomain === null) {
+        return sharedNullResponse;
+      }
+
+      // Step 1: we query NS records first. If there is any NS records, we assume the domain is alive
+
+      /*
 ; <<>> DiG 9.20.11 <<>> tencentcloud.com NS @1.0.0.1 +tls
 ;; global options: +cmd
 ;; Got answer:
@@ -83,57 +102,49 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 ;; WHEN: Fri Aug 22 00:26:29 CST 2025
 ;; MSG SIZE  rcvd: 468
 */
+      // dns servers get shuffled every time called
+      const shuffledDnsClients = getDnsClients(shuffleArray(dnsServers, { copy: true }));
 
-  const {
-    dnsServers = defaultDnsServers,
-    confirmations: maxConfirmations = 2,
-    maxAttempts: _maxAttempts = dnsServers.length,
-    retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout
-  } = dnsOptions;
-  // each server get atmost one attempt, only less no more
-  const maxAttempts = Math.min(_maxAttempts, dnsServers.length);
-  const shuffledDnsClients = getDnsClients(shuffleArray(dnsServers, { copy: true }));
+      let attempts = 0;
+      let confirmations = 0;
 
-  const dnsRetryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
+      while (attempts < maxAttempts) {
+        if (confirmations >= maxConfirmations) {
+          return { registerableDomain, alive: true };
+        }
 
-  let attempts = 0;
-  let confirmations = 0;
-
-  while (attempts < maxAttempts) {
-    if (confirmations >= maxConfirmations) {
-      return { registerableDomain, alive: true };
-    }
-
-    const resolve = shuffledDnsClients[attempts % shuffledDnsClients.length];
-    try {
-      // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-      const resp = await asyncRetry(() => resolve(registerableDomain, 'NS'), dnsRetryOption);
-      // if we found any NS records, the domain is alive
-      if (resp.answers.length > 0) {
-        confirmations++;
+        const resolve = shuffledDnsClients[attempts % shuffledDnsClients.length];
+        try {
+          // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
+          const resp = await asyncRetry(() => resolve(registerableDomain, 'NS'), dnsRetryOption);
+          // if we found any NS records, the domain is alive
+          if (resp.answers.length > 0) {
+            confirmations++;
+          }
+        } finally {
+          attempts++;
+        }
       }
-    } finally {
-      attempts++;
-    }
-  }
 
-  // This can only be reached only if we have tried enough DNS servers and not enough satisfactory answers were found
-  // In this case, we move on to Step 2.
+      // This can only be reached only if we have tried enough DNS servers and not enough satisfactory answers were found
+      // In this case, we move on to Step 2.
 
-  // Step 2: we query RDAP whois server
-  // This is because some domains are using faulty authoritative nameservers that returns SOA records for NS query
-  // Here is NS query for "tencentcloud.com" as an example
+      // Step 2: we query RDAP whois server
+      // This is because some domains are using faulty authoritative nameservers that returns SOA records for NS query
+      // Here is NS query for "tencentcloud.com" as an example
 
-  try {
-    const registered = await domainHasBeenRegistered(registerableDomain, whoisOptions);
-    return {
-      registerableDomain,
-      alive: registered
-    };
-  } catch {
-    return {
-      registerableDomain,
-      alive: whoisOptions.whoisErrorCountAsAlive ?? true
-    };
-  }
+      try {
+        const registered = await domainHasBeenRegistered(registerableDomain, whoisOptions);
+        return {
+          registerableDomain,
+          alive: registered
+        };
+      } catch {
+        return {
+          registerableDomain,
+          alive: whoisOptions.whoisErrorCountAsAlive ?? true
+        };
+      }
+    });
+  };
 }

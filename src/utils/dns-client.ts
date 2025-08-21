@@ -31,7 +31,7 @@ export interface DnsOptions {
   confirmations?: number,
 
   /**
-   * Provided dns servers will be shuffled before being attempted. On each attempt, the query would
+   * The specified dns servers will be shuffled before being attempted. On each attempt, the query would
    * be retried (determined by the retry* options) if any error occurs.
    *
    * The default value of `maxAttempts` is the length of the provided dnsServers array (i.e. each server
