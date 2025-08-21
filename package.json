@@ -1,0 +1,29 @@
+{
+  "name": "domain-alive",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint --format=sukka .",
+    "build": "bunchee --no-sourcemap",
+    "prerelease": "pnpm run lint && pnpm run test && pnpm run build",
+    "release": "bumpp -r --all --commit \"release: %s\" --tag \"%s\""
+  },
+  "keywords": [
+    "DNS",
+    "Domain",
+    "FQDN"
+  ],
+  "author": "SukkaW <https://skk.moe>",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint-sukka/node": "^6.23.1",
+    "bumpp": "^10.2.3",
+    "bunchee": "^6.6.0",
+    "eslint": "^9.33.0",
+    "eslint-config-sukka": "^6.23.1",
+    "eslint-formatter-sukka": "^6.23.1",
+    "typescript": "latest"
+  },
+  "packageManager": "pnpm@10.15.0"
+}
