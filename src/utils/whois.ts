@@ -28,15 +28,15 @@ export interface WhoisOptions {
      *
      * Some public whois server mapping source:
      *
+     * - Fetch the mapping text file from the source code of "WHOIS(1)" and processed it into a JSON:
+     *   - https://cdn.jsdelivr.net/gh/rfc1036/whois@next/tld_serv_list (recommended)
+     *   - https://raw.githubusercontent.com/rfc1036/whois/next/tld_serv_list
      * - Install the `whois-servers-list` package from "WooMai/whois-servers" project through npm, then update regularly
      * - Fetch the JSON directly from "WooMai/whois-servers" project through one of the following URLs:
      *   - https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json (recommended)
      *   - https://raw.githubusercontent.com/WooMai/whois-servers/master/list.json
      *   - https://unpkg.com/whois-servers-list@latest/list.json
      *   - https://esm.sh/whois-servers-list@latest/list.json
-     * - Fetch the mapping text file from the source code of "WHOIS(1)" and processed it into a JSON:
-     *   - https://cdn.jsdelivr.net/gh/rfc1036/whois@next/tld_serv_list (recommended)
-     *   - https://raw.githubusercontent.com/rfc1036/whois/next/tld_serv_list
      */
   customWhoisServersMapping?: { [tldWithoutDot: string]: string },
 
@@ -63,7 +63,7 @@ const getIcannTldOptions: Parameters<typeof getPublicSuffix>[1] = {
 };
 
 const cacheTldWhoisServer: Record<string, string> = {
-  // very common ccTLDs we just cache them
+  // very common ccTLDs we just hardcoded them
   com: 'whois.verisign-grs.com',
   net: 'whois.verisign-grs.com',
   org: 'whois.pir.org',
@@ -137,6 +137,7 @@ export class WhoisQueryError extends Error {
   }
 }
 
+const whoiserTLDNotSupportedSymbol = Symbol('"whoiser" library returns "TLD not supported" error');
 const whoiserNoWhoisSymbol = Symbol('"whoiser" library returns "No WHOIS data found" error');
 
 /**
@@ -160,7 +161,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
 
   let whois;
   try {
-    whois = await asyncRetry<typeof whoiserNoWhoisSymbol | object>(
+    whois = await asyncRetry<typeof whoiserTLDNotSupportedSymbol | typeof whoiserNoWhoisSymbol | object>(
       (bail) => whoiserDomain(
         registerableDomain,
         { raw: true, timeout, host: cachedWhoisServer || undefined }
@@ -170,9 +171,14 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
         if (errorMessage) {
           if (
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/whoiser.ts#L176
-            (errorMessage.includes('TLD for "') && errorMessage.includes('" not supported'))
+            errorMessage.includes('TLD for "') && errorMessage.includes('" not supported')
+          ) {
+            return whoiserTLDNotSupportedSymbol;
+          }
+
+          if (
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/utils.ts#L36
-            || (errorMessage.includes('Invalid TLD "'))
+            (errorMessage.includes('Invalid TLD "'))
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/whoiser.ts#L103
             || (errorMessage.includes('TLD "') && errorMessage.includes('" not found'))
           ) {
@@ -193,8 +199,13 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
     throw new WhoisQueryError(registerableDomain, e);
   }
 
+  if (whois === whoiserTLDNotSupportedSymbol) {
+    // If TLD doesn't support WHOIS/RDAP, we have no choice but to assume it's alive
+    return true;
+  }
+
   if (whois === whoiserNoWhoisSymbol) {
-    // special case handling for "No WHOIS data found"
+    // If "No WHOIS data found" is returned, the domain must not exist
     return false;
   }
 
