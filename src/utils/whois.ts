@@ -154,7 +154,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
   }
 
   const cachedWhoisServer = cacheTldWhoisServer[tld] as string | undefined;
-  const { timeout = 5000, retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout } = options;
+  const { timeout = 5000, retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000 } = options;
 
   // hoist options above
   const retryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };

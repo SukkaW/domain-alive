@@ -63,7 +63,7 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
     dnsServers = defaultDnsServers,
     confirmations: maxConfirmations = 2,
     maxAttempts: _maxAttempts = dnsServers.length,
-    retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout
+    retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000
   } = dnsOptions;
 
   // each server get atmost one attempt, only less no more
