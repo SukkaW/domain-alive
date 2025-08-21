@@ -2,6 +2,7 @@ import { getPublicSuffix } from 'tldts';
 import asyncRetry from 'async-retry';
 import { whoisDomain as whoiserDomain } from 'whoiser';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
+import { extractErrorMessage } from 'foxts/extract-error-message';
 
 export interface WhoisOptions {
   timeout?: number,
@@ -165,20 +166,19 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
         { raw: true, timeout, host: cachedWhoisServer || undefined }
       ).catch((error: unknown) => {
         // TODO: wait for "whoiser" library to expose special error types.
-        if (
-          typeof error === 'object' && error !== null && 'message' in error && typeof error.message === 'string'
-        ) {
+        const errorMessage = extractErrorMessage(error);
+        if (errorMessage) {
           if (
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/whoiser.ts#L176
-            (error.message.includes('TLD for "') && error.message.includes('" not supported'))
+            (errorMessage.includes('TLD for "') && errorMessage.includes('" not supported'))
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/utils.ts#L36
-            || (error.message.includes('Invalid TLD "'))
+            || (errorMessage.includes('Invalid TLD "'))
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/whoiser.ts#L103
-            || (error.message.includes('TLD "') && error.message.includes('" not found'))
+            || (errorMessage.includes('TLD "') && errorMessage.includes('" not found'))
           ) {
             bail(new WhoisQueryError(registerableDomain, error));
             // https://github.com/LayeredStudio/whoiser/blob/3f103843a198468eccef5a9d5a72dd82fbe5316c/src/parsers.ts#L28
-          } else if (error.message.includes('No WHOIS data found')) {
+          } else if (errorMessage.includes('No WHOIS data found')) {
             return whoiserNoWhoisSymbol; // we will handle this later
           }
         }

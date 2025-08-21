@@ -18,8 +18,8 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       foxts:
-        specifier: ^3.11.1
-        version: 3.11.1
+        specifier: ^3.12.0
+        version: 3.12.0
       punycode:
         specifier: ^2.3.1
         version: 2.3.1
@@ -1040,8 +1040,8 @@ packages:
   flatted@3.3.3:
     resolution: {integrity: sha512-GX+ysw4PBCz0PzosHDepZGANEuFCMLrnRTiEy9McGjmkCQYwRq4A/X786G/fjM/+OjsWSU1ZrY5qyARZmO/uwg==}
 
-  foxts@3.11.1:
-    resolution: {integrity: sha512-R099NsBvarB5uNLDzqnngTej8OKl9FRHjHrwWKuHkPzV4KTK/QoOkF4XY6y2rA1LB0qZ4C9yjoXGdCWbohb7lw==}
+  foxts@3.12.0:
+    resolution: {integrity: sha512-9yPxs9AAxpn+dDesm8gnKGE5I6hKe7YhfAvIzfxGjg5UYpoctzep4FEQV8EkJj8XBW4sCPLOfnt6SH4eBApqew==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -2286,7 +2286,7 @@ snapshots:
       eslint-plugin-regexp: 2.10.0(eslint@9.33.0(jiti@2.5.1))
       eslint-plugin-sukka: 6.23.1(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
       eslint-plugin-unused-imports: 4.2.0(@typescript-eslint/eslint-plugin@8.40.0(@typescript-eslint/parser@8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2))(eslint@9.33.0(jiti@2.5.1))
-      foxts: 3.11.1
+      foxts: 3.12.0
       jsonc-eslint-parser: 2.4.0
       picocolors: 1.1.1
       typescript-eslint: 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
@@ -2423,7 +2423,7 @@ snapshots:
       '@eslint-sukka/shared': 6.23.1(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
       '@typescript-eslint/type-utils': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
       '@typescript-eslint/utils': 8.40.0(eslint@9.33.0(jiti@2.5.1))(typescript@5.9.2)
-      foxts: 3.11.1
+      foxts: 3.12.0
     optionalDependencies:
       typescript: 5.9.2
     transitivePeerDependencies:
@@ -2565,7 +2565,7 @@ snapshots:
 
   flatted@3.3.3: {}
 
-  foxts@3.11.1:
+  foxts@3.12.0:
     dependencies:
       fast-escape-html: 1.1.0
       fast-escape-regexp: 1.0.1
