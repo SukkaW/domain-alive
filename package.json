@@ -19,7 +19,7 @@
   "scripts": {
     "lint": "eslint --format=sukka .",
     "build": "bunchee --no-sourcemap",
-    "prerelease": "pnpm run lint && pnpm run test && pnpm run build",
+    "prerelease": "pnpm run lint && pnpm run build",
     "release": "bumpp -r --all --commit \"release: %s\" --tag \"%s\""
   },
   "keywords": [
