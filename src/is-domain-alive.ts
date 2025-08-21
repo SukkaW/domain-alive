@@ -7,10 +7,15 @@ import asyncRetry from 'async-retry';
 export interface DomainAliveOptions extends RegisterableDomainAliveOptions {}
 
 export async function isDomainAlive(domain: string, options: DomainAliveOptions = {}): Promise<boolean> {
-  if (
-    !(await isRegisterableDomainAlive(domain, options)).alive
-  ) {
+  const registerableDomainAliveResult = await isRegisterableDomainAlive(domain, options);
+
+  if (!registerableDomainAliveResult.alive) {
     return false;
+  }
+
+  // If the domain has no subdomain, we don't query A/AAAA
+  if (registerableDomainAliveResult.registerableDomain === domain) {
+    return registerableDomainAliveResult.alive;
   }
 
   const {
