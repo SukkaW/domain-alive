@@ -38,7 +38,7 @@ const isDomainAlive = createDomainAliveChcker({
 
 ## Detect Algorithm
 
-The library uses a combination of `NS` records, WHOIS lookups, `A/AAAA` records to determine if a domain is alive. The detection process involves the following steps:
+The library uses a combination techniques of `NS` records, WHOIS lookups, `A/AAAA` records to determine if a domain is alive. The detection process involves the following steps:
 
 1. Check if the the "registerable part" of the domain (a.k.a. apex domain or root domain) has any `NS` records.
   - The specified DNS servers will be shuffled, then being attempted. On each attempt, the query would be retried if any error occurs. If any `NS` record is found, a confirmation is made.
