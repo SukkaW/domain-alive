@@ -18,8 +18,8 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1
       dns2:
-        specifier: ^2.1.0
-        version: 2.1.0
+        specifier: github:lsongdev/node-dns#e4fa035aca0b8eb730bde3431fbf0c60a31a09c9
+        version: https://codeload.github.com/lsongdev/node-dns/tar.gz/e4fa035aca0b8eb730bde3431fbf0c60a31a09c9
       foxts:
         specifier: ^3.12.0
         version: 3.12.0
@@ -790,8 +790,9 @@ packages:
   destr@2.0.5:
     resolution: {integrity: sha512-ugFTXCtDZunbzasqBxrK93Ik/DRYsO6S/fedkWEMKqt04xZ4csmnmwGDBAb07QWNaGMAmnTIemsYZCksjATwsA==}
 
-  dns2@2.1.0:
-    resolution: {integrity: sha512-m27K11aQalRbmUs7RLaz6aPyceLjAoqjPRNTdE7qUouQpl+PC8Bi67O+i9SuJUPbQC8dxFrczAxfmTPuTKHNkw==}
+  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/e4fa035aca0b8eb730bde3431fbf0c60a31a09c9:
+    resolution: {tarball: https://codeload.github.com/lsongdev/node-dns/tar.gz/e4fa035aca0b8eb730bde3431fbf0c60a31a09c9}
+    version: 2.1.0
 
   dotenv@17.2.1:
     resolution: {integrity: sha512-kQhDYKZecqnM0fCnzI5eIv5L4cAe/iRI+HqMbO/hbRdTAeXDG+M9FjipUxNfbARuEg4iHIbhnhs78BCHNbSxEQ==}
@@ -2259,7 +2260,7 @@ snapshots:
 
   destr@2.0.5: {}
 
-  dns2@2.1.0: {}
+  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/e4fa035aca0b8eb730bde3431fbf0c60a31a09c9: {}
 
   dotenv@17.2.1: {}
 
