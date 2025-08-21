@@ -7,6 +7,9 @@ import asyncRetry from 'async-retry';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
+import debug from 'debug';
+
+const log = debug('domain-alive:is-domain-alive');
 
 export interface DomainAliveOptions extends RegisterableDomainAliveOptions {
   resultCache?: CacheImplementation<DomainAliveResult>
@@ -24,7 +27,7 @@ const sharedNullishResult: DomainAliveResult = Object.freeze({
   alive: false
 });
 
-export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
+export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
   const {
     dns: dnsOptions = {},
     resultCache = new Map<string, DomainAliveResult>()
@@ -85,6 +88,8 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
 
         while (attempts < maxAttempts) {
           if (confirmations >= maxConfirmations) {
+            log('[status] %s %s', domain, true);
+
             return {
               registerableDomain: registerableDomainAliveResult.registerableDomain,
               registerableDomainAlive: registerableDomainAliveResult.alive,
@@ -102,6 +107,8 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
             }
           } finally {
             attempts++;
+
+            log('[A] %s %d %d/%d', domain, confirmations, attempts, maxAttempts);
           }
         }
       }
@@ -113,6 +120,8 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
 
         while (attempts < maxAttempts) {
           if (confirmations >= maxConfirmations) {
+            log('[status] %s %s', domain, true);
+
             return {
               registerableDomain: registerableDomainAliveResult.registerableDomain,
               registerableDomainAlive: registerableDomainAliveResult.alive,
@@ -130,11 +139,15 @@ export function createDomainAliveChcker(options: DomainAliveOptions = {}) {
             }
           } finally {
             attempts++;
+
+            log('[AAAA] %s %d %d/%d', domain, confirmations, attempts, maxAttempts);
           }
         }
       }
 
       // neither A nor AAAA records found
+      log('[status] %s %s', domain, false);
+
       return {
         registerableDomain: registerableDomainAliveResult.registerableDomain,
         registerableDomainAlive: registerableDomainAliveResult.alive,

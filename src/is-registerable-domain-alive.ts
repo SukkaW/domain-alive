@@ -9,6 +9,9 @@ import asyncRetry from 'async-retry';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
+import debug from 'debug';
+
+const log = debug('domain-alive:is-registerable-domain-alive');
 
 const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
   allowIcannDomains: true,
@@ -113,6 +116,8 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 
       while (attempts < maxAttempts) {
         if (confirmations >= maxConfirmations) {
+          log('[status] %s %s', registerableDomain, true);
+
           return { registerableDomain, alive: true };
         }
 
@@ -126,6 +131,8 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
           }
         } finally {
           attempts++;
+
+          log('[NS] %s %d %d/%d', domain, confirmations, attempts, maxAttempts);
         }
       }
 
@@ -138,11 +145,20 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 
       try {
         const registered = await domainHasBeenRegistered(registerableDomain, whoisOptions);
+
+        log('[whois] %s %s', registerableDomain, registered);
+
+        log('[status] %s %s', registerableDomain, registered);
+
         return {
           registerableDomain,
           alive: registered
         };
-      } catch {
+      } catch (e) {
+        log('[whois] %s %O', registerableDomain, e);
+
+        log('[status] %s %s', registerableDomain, whoisOptions.whoisErrorCountAsAlive ?? true);
+
         return {
           registerableDomain,
           alive: whoisOptions.whoisErrorCountAsAlive ?? true
