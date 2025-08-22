@@ -1,6 +1,6 @@
 {
   "name": "domain-alive",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A Node.js library for checking if an FQDN (Fully Qualified Domain Name) is alive or not, uses a combination techniques of `NS` records, WHOIS/RDAP lookups, `A/AAAA` records",
   "repository": {
     "type": "git",
