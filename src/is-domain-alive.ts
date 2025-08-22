@@ -105,6 +105,9 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
               confirmations++;
             }
           } catch (e) {
+            if (typeof e === 'object' && e !== null) {
+              Object.assign(e, { dns: resolve.server });
+            }
             log('[A] %s error %O', domain, e);
           } finally {
             attempts++;
@@ -137,6 +140,9 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
               confirmations++;
             }
           } catch (e) {
+            if (typeof e === 'object' && e !== null) {
+              Object.assign(e, { dns: resolve.server });
+            }
             log('[AAAA] %s error %O', domain, e);
           } finally {
             attempts++;
