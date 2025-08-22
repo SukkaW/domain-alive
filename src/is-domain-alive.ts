@@ -10,6 +10,7 @@ import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 
 const log = debug('domain-alive:is-domain-alive');
+const deadLog = debug('domain-alive:dead-domain');
 
 export interface DomainAliveOptions extends RegisterableDomainAliveOptions {
   resultCache?: CacheImplementation<DomainAliveResult>
@@ -88,8 +89,6 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
         while (attempts < maxAttempts) {
           if (confirmations >= maxConfirmations) {
-            log('[status] %s %s', domain, true);
-
             return {
               registerableDomain: registerableDomainAliveResult.registerableDomain,
               registerableDomainAlive: registerableDomainAliveResult.alive,
@@ -122,8 +121,6 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
         while (attempts < maxAttempts) {
           if (confirmations >= maxConfirmations) {
-            log('[status] %s %s', domain, true);
-
             return {
               registerableDomain: registerableDomainAliveResult.registerableDomain,
               registerableDomainAlive: registerableDomainAliveResult.alive,
@@ -150,7 +147,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
       }
 
       // neither A nor AAAA records found
-      log('[status] %s %s', domain, false);
+      deadLog('[dead] %s %s', '(A/AAAA)', domain);
 
       return {
         registerableDomain: registerableDomainAliveResult.registerableDomain,

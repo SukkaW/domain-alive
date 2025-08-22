@@ -12,6 +12,7 @@ import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
+const deadLog = debug('domain-alive:dead-domain');
 
 const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
   allowIcannDomains: true,
@@ -116,8 +117,6 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 
       while (attempts < maxAttempts) {
         if (confirmations >= maxConfirmations) {
-          log('[status] %s %s', registerableDomain, true);
-
           return { registerableDomain, alive: true };
         }
 
@@ -150,15 +149,15 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 
         log('[whois] %s %s', registerableDomain, registered);
 
-        log('[status] %s %s', registerableDomain, registered);
+        if (!registered) {
+          deadLog('[dead] %s %s', '(apex)', registerableDomain);
+        }
 
         return {
           registerableDomain,
           alive: registered
         };
       } catch {
-        log('[status] %s %s', registerableDomain, whoisOptions.whoisErrorCountAsAlive ?? true);
-
         return {
           registerableDomain,
           alive: whoisOptions.whoisErrorCountAsAlive ?? true
