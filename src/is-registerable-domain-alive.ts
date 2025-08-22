@@ -129,6 +129,8 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
           if (resp.answers.length > 0) {
             confirmations++;
           }
+        } catch (e) {
+          log('[NS] %s error %O', domain, e);
         } finally {
           attempts++;
 
@@ -154,9 +156,7 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
           registerableDomain,
           alive: registered
         };
-      } catch (e) {
-        log('[whois] %s %O', registerableDomain, e);
-
+      } catch {
         log('[status] %s %s', registerableDomain, whoisOptions.whoisErrorCountAsAlive ?? true);
 
         return {

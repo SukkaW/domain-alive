@@ -3,6 +3,9 @@ import asyncRetry from 'async-retry';
 import { whoisDomain as whoiserDomain } from 'whoiser';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { extractErrorMessage } from 'foxts/extract-error-message';
+import debug from 'debug';
+
+const log = debug('domain-alive:whois');
 
 export interface WhoisOptions {
   timeout?: number,
@@ -154,7 +157,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
   }
 
   const cachedWhoisServer = cacheTldWhoisServer[tld] as string | undefined;
-  const { timeout = 5000, retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000 } = options;
+  const { whoisErrorCountAsAlive = true, timeout = 5000, retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000 } = options;
 
   // hoist options above
   const retryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
@@ -195,8 +198,9 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
       retryOption
     );
   } catch (e) {
-    // re-throw with our own error
-    throw new WhoisQueryError(registerableDomain, e);
+    log('[whois] %s %O', registerableDomain, e);
+
+    return whoisErrorCountAsAlive;
   }
 
   if (whois === whoiserTLDNotSupportedSymbol) {

@@ -105,6 +105,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             if (resp.answers.length > 0) {
               confirmations++;
             }
+          } catch (e) {
+            log('[A] %s error %O', domain, e);
           } finally {
             attempts++;
 
@@ -137,6 +139,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             if (resp.answers.length > 0) {
               confirmations++;
             }
+          } catch (e) {
+            log('[AAAA] %s error %O', domain, e);
           } finally {
             attempts++;
 
