@@ -64,9 +64,18 @@ export function getDnsClients(servers: string[]): Array<DnsResolver & { server: 
     let client: DnsResolver;
 
     switch (protocol) {
-      case 'https':
-        client = DOHClient({ dns });
+      case 'https': {
+        // TODO: fuck dns2 incorrect DOHClient server parse impl
+        const u = new URL(dns);
+        if (u.pathname === '/') {
+          u.pathname = '/dns-query';
+        }
+        // u.searchParams.set('dns', '{query}');
+        u.search = '?dns={query}';
+
+        client = DOHClient({ dns: u.href });
         break;
+      }
       case 'tls':
         client = TCPClient({ dns: server, protocol: 'tls:', port: port || 853 });
         break;
