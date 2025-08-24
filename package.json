@@ -23,6 +23,7 @@
   "scripts": {
     "lint": "eslint --format=sukka .",
     "build": "bunchee --no-sourcemap",
+    "node": "node --require=@swc-node/register",
     "prerelease": "pnpm run lint && pnpm run build",
     "release": "bumpp -r --all --commit \"release: %s\" --tag \"%s\""
   },
@@ -45,6 +46,7 @@
   },
   "devDependencies": {
     "@eslint-sukka/node": "^6.23.1",
+    "@swc-node/register": "^1.11.1",
     "@types/async-retry": "^1.4.9",
     "@types/debug": "^4.1.12",
     "@types/dns2": "^2.0.10",
@@ -52,7 +54,7 @@
     "@types/punycode": "^2.1.4",
     "bumpp": "^10.2.3",
     "bunchee": "^6.6.0",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "eslint-config-sukka": "^6.23.1",
     "eslint-formatter-sukka": "^6.23.1",
     "typescript": "^5.9.2",
