@@ -57,21 +57,17 @@ export function getDnsClients(servers: string[]): Array<DnsResolver & { server: 
     const protocolIndex = dns.indexOf('://');
     const protocol = protocolIndex === -1 ? '' : dns.slice(0, protocolIndex);
 
-    const rest = dns.slice(protocolIndex + 3);
-    const [server, _port] = rest.split(':', 2);
+    const [server, _port] = dns.slice(protocolIndex + 3).split(':', 2);
     const port = _port ? Number.parseInt(_port, 10) : 0;
 
     let client: DnsResolver;
 
     switch (protocol) {
       case 'https': {
-        // TODO: fuck dns2 incorrect DOHClient server parse impl
         const u = new URL(dns);
-        if (u.pathname === '/') {
+        if (!server.includes('/')) {
           u.pathname = '/dns-query';
         }
-        // u.searchParams.set('dns', '{query}');
-        u.search = '?dns={query}';
 
         client = DOHClient({ dns: u.href });
         break;
