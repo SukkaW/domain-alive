@@ -204,7 +204,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
   }
 
   if (whois === whoiserTLDNotSupportedSymbol) {
-    // If TLD doesn't support WHOIS/RDAP, we have no choice but to assume it's alive
+    // If TLD doesn't support WHOIS/RDAP, we have no choice but to assume it's registered
     return true;
   }
 
@@ -244,7 +244,6 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
 // some servers (like TLD whois servers) might have cached/outdated results
 // we can only make sure a domain is alive once all response from all whois servers demonstrate so
 function walkWhois(whois: object): boolean {
-  // eslint-disable-next-line sukka/no-single-return -- mutable
   let whoisIsEmpty = true;
 
   if ('__raw' in whois && typeof whois.__raw === 'string') {
@@ -252,6 +251,7 @@ function walkWhois(whois: object): boolean {
 
     for (const line of lines) {
       if (whoisNotFoundKeywordTest(line)) {
+        log('[whois] line %s, %O', line, whois);
         return false;
       }
     }
@@ -260,7 +260,6 @@ function walkWhois(whois: object): boolean {
   // so we can't determine if the domain has been registered or not, that's OK, we can check the referrer/follow/redirected whois output.
   for (const key in whois) {
     if (Object.hasOwn(whois, key)) {
-      // eslint-disable-next-line sukka/no-single-return -- mutable
       whoisIsEmpty = false;
 
       if (key === '__raw') { // skip
@@ -282,6 +281,7 @@ function walkWhois(whois: object): boolean {
     }
   }
 
-  // eslint-disable-next-line sukka/no-single-return -- mutable
-  return whoisIsEmpty;
+  log('[whois] %O', whois);
+
+  return !whoisIsEmpty;
 }
