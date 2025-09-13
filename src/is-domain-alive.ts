@@ -11,6 +11,7 @@ import debug from 'debug';
 
 const log = debug('domain-alive:is-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
+const errorLog = debug('domain-alive:error:dns');
 
 export interface DomainAliveOptions extends RegisterableDomainAliveOptions {
   resultCache?: CacheImplementation<DomainAliveResult>
@@ -108,7 +109,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             if (typeof e === 'object' && e !== null) {
               Object.assign(e, { dns: resolve.server });
             }
-            log('[A] %s error %O', domain, e);
+            errorLog('[A] %s error %O', domain, e);
           } finally {
             attempts++;
 
@@ -143,7 +144,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             if (typeof e === 'object' && e !== null) {
               Object.assign(e, { dns: resolve.server });
             }
-            log('[AAAA] %s error %O', domain, e);
+            errorLog('[AAAA] %s error %O', domain, e);
           } finally {
             attempts++;
 

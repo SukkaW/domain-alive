@@ -6,6 +6,7 @@ import { extractErrorMessage } from 'foxts/extract-error-message';
 import debug from 'debug';
 
 const log = debug('domain-alive:whois');
+const errorLog = debug('domain-alive:error:whois');
 
 export interface WhoisOptions {
   timeout?: number,
@@ -198,7 +199,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
       retryOption
     );
   } catch (e) {
-    log('[whois] %s %O', registerableDomain, e);
+    errorLog('[whois] %s %O', registerableDomain, e);
 
     return whoisErrorCountAsAlive;
   }

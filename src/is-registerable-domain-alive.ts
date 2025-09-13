@@ -13,6 +13,7 @@ import debug from 'debug';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
+const errorNsLog = debug('domain-alive:error:ns');
 
 const getRegisterableDomainTldtsOption: Parameters<typeof getDomain>[1] = {
   allowIcannDomains: true,
@@ -129,7 +130,7 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
             confirmations++;
           }
         } catch (e) {
-          log('[NS] %s error %O', domain, e);
+          errorNsLog('[NS] %s error %O', domain, e);
         } finally {
           attempts++;
 
