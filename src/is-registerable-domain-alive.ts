@@ -130,7 +130,7 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
             confirmations++;
           }
         } catch (e) {
-          errorNsLog('[NS] %s error %O', domain, e);
+          errorNsLog('[NS] %s error (%s) %O', domain, resolve.server, e);
         } finally {
           attempts++;
 
