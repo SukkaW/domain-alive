@@ -1,5 +1,6 @@
 import { getPublicSuffix } from 'tldts';
-import asyncRetry from 'async-retry';
+import { asyncRetry } from 'foxts/async-retry';
+import type { AsyncRetryOptions } from 'foxts/async-retry';
 import { whoisDomain as whoiserDomain } from 'whoiser';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { extractErrorMessage } from 'foxts/extract-error-message';
@@ -161,7 +162,7 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
   const { whoisErrorCountAsAlive = true, timeout = 5000, retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000 } = options;
 
   // hoist options above
-  const retryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
+  const retryOption: AsyncRetryOptions = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
   let whois;
   try {

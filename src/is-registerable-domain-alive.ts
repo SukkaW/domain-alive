@@ -5,7 +5,8 @@ import { domainHasBeenRegistered } from './utils/whois';
 import type { WhoisOptions } from './utils/whois';
 import type { DnsOptions } from './utils/dns-client';
 import { shuffleArray } from 'foxts/shuffle-array';
-import asyncRetry from 'async-retry';
+import { asyncRetry } from 'foxts/async-retry';
+import type { AsyncRetryOptions } from 'foxts/async-retry';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
@@ -71,7 +72,7 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
   // each server get atmost one attempt, only less no more
   const maxAttempts = Math.min(_maxAttempts, dnsServers.length);
 
-  const dnsRetryOption: asyncRetry.Options = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
+  const dnsRetryOption: AsyncRetryOptions = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
   const mutex = createAsyncMutex<RegisterableDomainAliveResult>();
 
