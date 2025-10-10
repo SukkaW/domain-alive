@@ -40,7 +40,6 @@
     "debug": "4.4.1",
     "dns2": "github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11",
     "foxts": "^4.1.0",
-    "punycode": "^2.3.1",
     "tldts": "^7.0.16"
   },
   "devDependencies": {
@@ -49,7 +48,6 @@
     "@types/debug": "^4.1.12",
     "@types/dns2": "^2.0.10",
     "@types/node": "^24.6.2",
-    "@types/punycode": "^2.1.4",
     "bumpp": "^10.2.3",
     "bunchee": "^6.6.0",
     "eslint": "^9.37.0",

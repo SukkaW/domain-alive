@@ -150,7 +150,8 @@ const whoiserNoWhoisSymbol = Symbol('"whoiser" library returns "No WHOIS data fo
  *
  * We expect this function to only be called within `isRegisterableDomainAlive`. If you are trying
  * to do this yourself, please implement the necessary extraction first, we recommend using both
- * `punycode` & `tldts` library, which we also use in the `isRegisterableDomainAlive` function.
+ * `require('node:url').domainToASCII` API & `tldts` library, which we also use in the
+ * `isRegisterableDomainAlive` function.
  */
 export async function domainHasBeenRegistered(registerableDomain: string, options: WhoisOptions = {}): Promise<boolean> {
   const tld = getPublicSuffix(registerableDomain, getIcannTldOptions);

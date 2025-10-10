@@ -1,4 +1,3 @@
-import { toASCII } from 'punycode/';
 import { shuffleArray } from 'foxts/shuffle-array';
 import { createRegisterableDomainAliveChecker } from './is-registerable-domain-alive';
 import type { RegisterableDomainAliveOptions, RegisterableDomainAliveResult } from './is-registerable-domain-alive';
@@ -9,6 +8,7 @@ import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
+import { domainToASCII } from 'url';
 
 const log = debug('domain-alive:is-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -55,7 +55,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
   const mutex = createAsyncMutex<DomainAliveResult>();
 
   return async function isDomainAlive(domain: string): Promise<DomainAliveResult> {
-    domain = toASCII(domain);
+    domain = domainToASCII(domain);
 
     const registerableDomainAliveResult = await isRegisterableDomainAlive(domain);
 

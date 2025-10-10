@@ -1,6 +1,5 @@
 import { getDomain } from 'tldts';
 import { defaultDnsServers, getDnsClients } from './utils/dns-client';
-import { toASCII } from 'punycode/';
 import { domainHasBeenRegistered } from './utils/whois';
 import type { WhoisOptions } from './utils/whois';
 import type { DnsOptions } from './utils/dns-client';
@@ -11,6 +10,7 @@ import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
+import { domainToASCII } from 'url';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -77,7 +77,7 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
   const mutex = createAsyncMutex<RegisterableDomainAliveResult>();
 
   return async function isRegisterableDomainAlive(domain: string): Promise<RegisterableDomainAliveResult> {
-    domain = toASCII(domain);
+    domain = domainToASCII(domain);
 
     return mutex(domain, () => cacheApply(registerableDomainResultCache, domain, async () => {
       // Step 0: we normalize the domain and find the registerable part
