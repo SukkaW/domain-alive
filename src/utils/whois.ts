@@ -201,7 +201,8 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
       retryOption
     );
   } catch (e) {
-    errorLog('[whois] %s %O', registerableDomain, e);
+    const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+    errorLog('[whois] %s %s', registerableDomain, errorMessage);
 
     return whoisErrorCountAsAlive;
   }

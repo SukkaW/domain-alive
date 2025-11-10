@@ -11,6 +11,7 @@ import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 import { domainToASCII } from 'url';
+import { extractErrorMessage } from 'foxts/extract-error-message';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -131,7 +132,8 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
             confirmations++;
           }
         } catch (e) {
-          errorNsLog('[NS] %s error (%s) %O', domain, resolve.server, e);
+          const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+          errorNsLog('[NS] %s error (%s) %s', domain, resolve.server, errorMessage);
         } finally {
           attempts++;
 

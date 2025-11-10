@@ -4,6 +4,7 @@ import type { RegisterableDomainAliveOptions, RegisterableDomainAliveResult } fr
 import { defaultDnsServers, getDnsClients } from './utils/dns-client';
 import { asyncRetry } from 'foxts/async-retry';
 import type { AsyncRetryOptions } from 'foxts/async-retry';
+import { extractErrorMessage } from 'foxts/extract-error-message';
 import { cacheApply } from './utils/cache';
 import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
@@ -107,10 +108,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
               confirmations++;
             }
           } catch (e) {
-            if (typeof e === 'object' && e !== null) {
-              Object.assign(e, { dns: resolve.server });
-            }
-            errorLog('[A] %s error %O', domain, e);
+            const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+            errorLog('[A] %s error (%s) %s', domain, resolve.server, errorMessage);
           } finally {
             attempts++;
 
@@ -142,10 +141,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
               confirmations++;
             }
           } catch (e) {
-            if (typeof e === 'object' && e !== null) {
-              Object.assign(e, { dns: resolve.server });
-            }
-            errorLog('[AAAA] %s error %O', domain, e);
+            const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+            errorLog('[AAAA] %s error (%s) %s', domain, resolve.server, errorMessage);
           } finally {
             attempts++;
 
