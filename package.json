@@ -53,6 +53,7 @@
     "eslint": "^9.39.2",
     "eslint-config-sukka": "^8.0.6",
     "eslint-formatter-sukka": "^8.0.6",
+    "http2-wrapper": "^2.2.1",
     "typescript": "^5.9.3",
     "whoiser": "2.0.0-beta.8"
   },

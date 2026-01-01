@@ -9,7 +9,7 @@ overrides:
 
 patchedDependencies:
   dns2@2.1.0:
-    hash: 84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f
+    hash: c4566310e494147dd722a080181b4f51dbc465b8175a1869db5a855d66968b64
     path: patches/dns2@2.1.0.patch
 
 importers:
@@ -49,7 +49,7 @@ importers:
         version: 6.9.3(typescript@5.9.3)
       dns2:
         specifier: github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11
-        version: https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f)
+        version: https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=c4566310e494147dd722a080181b4f51dbc465b8175a1869db5a855d66968b64)
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -59,6 +59,9 @@ importers:
       eslint-formatter-sukka:
         specifier: ^8.0.6
         version: 8.0.6(eslint@9.39.2(jiti@2.6.1))
+      http2-wrapper:
+        specifier: ^2.2.1
+        version: 2.2.1
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1197,6 +1200,10 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
+  http2-wrapper@2.2.1:
+    resolution: {integrity: sha512-V5nVw1PAOgfI3Lmeaj2Exmeg7fenjhRUgz1lPSezy1CuhPYbgQtbQj4jZfEAEMlaL+vupsvhjqCyjzob0yxsmQ==}
+    engines: {node: '>=10.19.0'}
+
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
     engines: {node: '>= 4'}
@@ -1394,6 +1401,10 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  quick-lru@5.1.1:
+    resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
+    engines: {node: '>=10'}
+
   rc9@2.1.2:
     resolution: {integrity: sha512-btXCnMmRIBINM2LDZoEmOogIZU7Qe7zn4BpomSKZ/ykbLObuBdvG+mFq11DL6fjH1DRwHhrlgtYWG96bJiC7Cg==}
 
@@ -1416,6 +1427,9 @@ packages:
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
     engines: {node: '>=0.10.0'}
+
+  resolve-alpn@1.2.1:
+    resolution: {integrity: sha512-0a1F4l73/ZFZOakJnQ3FvkJ2+gSTQWz/r2KE5OdDY0TxPm5h4GkqkWWfM47T7HsbnOtcJVEF4epCVy6u7Q3K+g==}
 
   resolve-from@4.0.0:
     resolution: {integrity: sha512-pb/MYmXstAkysRFx8piNI1tGFNQIFA3vkE3Gq4EuA1dF6gHp/+vgZqsCGJapvy8N3Q+4o7FwvquPJcnZ7RYy4g==}
@@ -2370,7 +2384,7 @@ snapshots:
 
   diff-sequences@27.5.1: {}
 
-  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f): {}
+  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=c4566310e494147dd722a080181b4f51dbc465b8175a1869db5a855d66968b64): {}
 
   dotenv@17.2.3: {}
 
@@ -2715,6 +2729,11 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
+  http2-wrapper@2.2.1:
+    dependencies:
+      quick-lru: 5.1.1
+      resolve-alpn: 1.2.1
+
   ignore@5.3.2: {}
 
   ignore@7.0.5: {}
@@ -2905,6 +2924,8 @@ snapshots:
 
   punycode@2.3.1: {}
 
+  quick-lru@5.1.1: {}
+
   rc9@2.1.2:
     dependencies:
       defu: 6.1.4
@@ -2924,6 +2945,8 @@ snapshots:
   repeat-string@1.6.1: {}
 
   require-directory@2.1.1: {}
+
+  resolve-alpn@1.2.1: {}
 
   resolve-from@4.0.0: {}
 

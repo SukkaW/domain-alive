@@ -1,20 +1,63 @@
 diff --git a/client/doh.js b/client/doh.js
-index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..dcbd9b4696dc49554259e5a008b7af6c5564d14b 100644
+index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..b19d737d56ee151acc45f3a95d56dd60625e5f95 100644
 --- a/client/doh.js
 +++ b/client/doh.js
-@@ -24,12 +24,13 @@ const protocols = {
-       });
-     });
+@@ -1,36 +1,21 @@
+ const http = require('http');
+ const https = require('https');
+-const http2 = require('http2');
++const HTTP2ClientRequest = require('http2-wrapper/source/client-request');
+ const Packet = require('../packet');
+ 
+-const protocols = {
+-  'http:'  : http.get,
+-  'https:' : https.get,
+-  'h2:'    : (url, options, done) => {
+-    const urlObj = new URL(url);
+-    const client = http2.connect(url.replace('h2:', 'https:'));
+-    const req = client.request({
+-      ':path'   : `${urlObj.pathname}${urlObj.search}`,
+-      ':method' : 'GET',
+-      ...options.headers,
+-    });
+-
+-    req.on('response', headers => {
+-      client.close();
+-      done({
+-        headers,
+-        statusCode : headers[':status'],
+-        on         : req.on.bind(req),
+-      });
+-    });
++// https://github.com/szmarczak/http2-wrapper/blob/f1a1776d4b1aef1cd47d55b1a950986e86145a09/source/index.js#L24
++// Copy the implementation allows us to pull in minimum code,
++// instead of importing the entire module to reduce bundle size
++function http2Get(url, options, callback) {
++  const req = new HTTP2ClientRequest(url, options, callback);
++  req.end();
++  return req;
++}
  
 -    req.on('error', err => {
-+    req.on('error', (_err) => {
-       client.close();
+-      client.close();
 -      throw err;
-     });
- 
-     req.end();
-+
-+    return req;
-   },
+-    });
+-
+-    req.end();
+-  },
++const protocols = {
++  'http:': http.get,
++  'https:': https.get,
++  'h2:': http2Get,
  };
  
+ const makeRequest = (url, query) => new Promise((resolve, reject) => {
+@@ -79,7 +64,7 @@ const buildQuery = ({ name, type = 'A', cls = Packet.CLASS.IN, clientIp, recursi
+ };
+ 
+ const DOHClient = ({ dns }) => {
+-  return async(name, type, cls, options = {}) => {
++  return async (name, type, cls, options = {}) => {
+     const query = buildQuery({ name, type, cls, ...options });
+     const response = await makeRequest(dns, query);
+     const data = await readStream(response);
