@@ -7,6 +7,11 @@ settings:
 overrides:
   eslint>chalk: npm:picocolors@^1.1.1
 
+patchedDependencies:
+  dns2@2.1.0:
+    hash: 84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f
+    path: patches/dns2@2.1.0.patch
+
 importers:
 
   .:
@@ -14,9 +19,6 @@ importers:
       debug:
         specifier: 4.4.1
         version: 4.4.1
-      dns2:
-        specifier: github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11
-        version: https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11
       foxts:
         specifier: ^5.0.4
         version: 5.0.4
@@ -45,6 +47,9 @@ importers:
       bunchee:
         specifier: ^6.9.3
         version: 6.9.3(typescript@5.9.3)
+      dns2:
+        specifier: github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11
+        version: https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f)
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -2365,7 +2370,7 @@ snapshots:
 
   diff-sequences@27.5.1: {}
 
-  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11: {}
+  dns2@https://codeload.github.com/lsongdev/node-dns/tar.gz/3adb7e91b3101c0e4f43ebaca3a568269ea04d11(patch_hash=84726d5f4e30e0d4337e9df1c6d49b3afe3e182f1a35b70d2d7450e865c8ff4f): {}
 
   dotenv@17.2.3: {}
 

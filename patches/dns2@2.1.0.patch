@@ -1,0 +1,20 @@
+diff --git a/client/doh.js b/client/doh.js
+index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..dcbd9b4696dc49554259e5a008b7af6c5564d14b 100644
+--- a/client/doh.js
++++ b/client/doh.js
+@@ -24,12 +24,13 @@ const protocols = {
+       });
+     });
+ 
+-    req.on('error', err => {
++    req.on('error', (_err) => {
+       client.close();
+-      throw err;
+     });
+ 
+     req.end();
++
++    return req;
+   },
+ };
+ 

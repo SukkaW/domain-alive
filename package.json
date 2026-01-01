@@ -38,7 +38,6 @@
   "license": "MIT",
   "dependencies": {
     "debug": "4.4.1",
-    "dns2": "github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11",
     "foxts": "^5.0.4",
     "tldts": "^7.0.19"
   },
@@ -50,6 +49,7 @@
     "@types/node": "^24.10.4",
     "bumpp": "^10.3.2",
     "bunchee": "^6.9.3",
+    "dns2": "github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11",
     "eslint": "^9.39.2",
     "eslint-config-sukka": "^8.0.6",
     "eslint-formatter-sukka": "^8.0.6",
