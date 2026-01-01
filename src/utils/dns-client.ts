@@ -63,7 +63,9 @@ export function getDnsClients(servers: string[]): Array<DnsResolver & { server: 
     let client: DnsResolver;
 
     switch (protocol) {
-      case 'https': {
+      // case 'http':
+      case 'https':
+      case 'h2': {
         const u = new URL(dns);
         if (!server.includes('/')) {
           u.pathname = '/dns-query';
