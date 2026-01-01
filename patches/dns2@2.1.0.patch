@@ -1,5 +1,5 @@
 diff --git a/client/doh.js b/client/doh.js
-index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..3ac1a6e3d41dfef88e87a9be9ac68287901123be 100644
+index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..15c7a9d5fc81d7f276de08c7f72e940c45aa034d 100644
 --- a/client/doh.js
 +++ b/client/doh.js
 @@ -1,36 +1,21 @@
@@ -33,7 +33,7 @@ index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..3ac1a6e3d41dfef88e87a9be9ac68287
 +// Copy the implementation allows us to pull in minimum code,
 +// instead of importing the entire module to reduce bundle size
 +function http2Get(url, options, callback) {
-+  const req = new HTTP2ClientRequest(url, options, callback);
++  const req = new HTTP2ClientRequest(url.replace('h2:', 'https:'), options, callback);
 +  req.end();
 +  return req;
 +}
@@ -52,18 +52,7 @@ index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..3ac1a6e3d41dfef88e87a9be9ac68287
  };
  
  const makeRequest = (url, query) => new Promise((resolve, reject) => {
-@@ -46,6 +31,10 @@ const makeRequest = (url, query) => new Promise((resolve, reject) => {
-   u.search = searchParams.toString();
-   const get = protocols[u.protocol];
-   if (!get) throw new Error(`Unsupported protocol: ${u.protocol}, must be specified (http://, https:// or h2://)`);
-+  // after determining the protocol, convert h2 to https for get
-+  if (u.protocol === 'h2:') {
-+    u.protocol = 'https:';
-+  }
-   const req = get(u.toString(), { headers: { accept: 'application/dns-message' } }, resolve);
-   if (req) req.on('error', reject);
- });
-@@ -79,7 +68,7 @@ const buildQuery = ({ name, type = 'A', cls = Packet.CLASS.IN, clientIp, recursi
+@@ -79,7 +64,7 @@ const buildQuery = ({ name, type = 'A', cls = Packet.CLASS.IN, clientIp, recursi
  };
  
  const DOHClient = ({ dns }) => {
