@@ -39,22 +39,22 @@
   "dependencies": {
     "debug": "4.4.1",
     "dns2": "github:lsongdev/node-dns#3adb7e91b3101c0e4f43ebaca3a568269ea04d11",
-    "foxts": "^5.0.2",
+    "foxts": "^5.0.4",
     "tldts": "^7.0.19"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^8.0.5",
+    "@eslint-sukka/node": "^8.0.6",
     "@swc-node/register": "^1.11.1",
     "@types/debug": "^4.1.12",
     "@types/dns2": "^2.0.10",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.4",
     "bumpp": "^10.3.2",
-    "bunchee": "^6.6.2",
-    "eslint": "^9.39.1",
-    "eslint-config-sukka": "^8.0.5",
-    "eslint-formatter-sukka": "^8.0.5",
+    "bunchee": "^6.9.3",
+    "eslint": "^9.39.2",
+    "eslint-config-sukka": "^8.0.6",
+    "eslint-formatter-sukka": "^8.0.6",
     "typescript": "^5.9.3",
     "whoiser": "2.0.0-beta.8"
   },
-  "packageManager": "pnpm@10.24.0"
+  "packageManager": "pnpm@10.27.0"
 }
