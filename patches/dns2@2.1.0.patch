@@ -1,5 +1,5 @@
 diff --git a/client/doh.js b/client/doh.js
-index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..b19d737d56ee151acc45f3a95d56dd60625e5f95 100644
+index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..3ac1a6e3d41dfef88e87a9be9ac68287901123be 100644
 --- a/client/doh.js
 +++ b/client/doh.js
 @@ -1,36 +1,21 @@
@@ -52,7 +52,18 @@ index c9abcb1ba0a287d50237b7ff0355cdfcc1b472ad..b19d737d56ee151acc45f3a95d56dd60
  };
  
  const makeRequest = (url, query) => new Promise((resolve, reject) => {
-@@ -79,7 +64,7 @@ const buildQuery = ({ name, type = 'A', cls = Packet.CLASS.IN, clientIp, recursi
+@@ -46,6 +31,10 @@ const makeRequest = (url, query) => new Promise((resolve, reject) => {
+   u.search = searchParams.toString();
+   const get = protocols[u.protocol];
+   if (!get) throw new Error(`Unsupported protocol: ${u.protocol}, must be specified (http://, https:// or h2://)`);
++  // after determining the protocol, convert h2 to https for get
++  if (u.protocol === 'h2:') {
++    u.protocol = 'https:';
++  }
+   const req = get(u.toString(), { headers: { accept: 'application/dns-message' } }, resolve);
+   if (req) req.on('error', reject);
+ });
+@@ -79,7 +68,7 @@ const buildQuery = ({ name, type = 'A', cls = Packet.CLASS.IN, clientIp, recursi
  };
  
  const DOHClient = ({ dns }) => {
