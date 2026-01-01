@@ -77,6 +77,8 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
 
   const mutex = createAsyncMutex<RegisterableDomainAliveResult>();
 
+  const dnsClients = getDnsClients(dnsServers);
+
   return async function isRegisterableDomainAlive(domain: string): Promise<RegisterableDomainAliveResult> {
     domain = domainToASCII(domain);
 
@@ -113,7 +115,7 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 ;; MSG SIZE  rcvd: 468
 */
       // dns servers get shuffled every time called
-      const shuffledDnsClients = getDnsClients(shuffleArray(dnsServers, { copy: true }));
+      const shuffledDnsClients = shuffleArray(dnsClients, { copy: true });
 
       let attempts = 0;
       let confirmations = 0;

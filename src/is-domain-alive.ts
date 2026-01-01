@@ -54,6 +54,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
   const dnsRetryOption: AsyncRetryOptions = { retries, minTimeout: retryMinTimeout, maxTimeout: retryMaxTimeout, factor: retryFactor };
 
   const mutex = createAsyncMutex<DomainAliveResult>();
+  const dnsClients = getDnsClients(dnsServers);
 
   return async function isDomainAlive(domain: string): Promise<DomainAliveResult> {
     domain = domainToASCII(domain);
@@ -83,7 +84,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
     return mutex(domain, () => cacheApply(resultCache, domain, async () => {
       // shuffle every time is called
-      const shuffledDnsClients = getDnsClients(shuffleArray(dnsServers, { copy: true }));
+      const shuffledDnsClients = shuffleArray(dnsClients, { copy: true });
 
       {
       // IPv4
