@@ -104,7 +104,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
           const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, 'A'), dnsRetryOption)) as DecodedPacket;
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'A', decode: true }), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
             if (resp.answers && resp.answers.length > 0) {
               confirmations++;
@@ -137,7 +137,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
           const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, 'AAAA'), dnsRetryOption)) as DecodedPacket;
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'AAAA', decode: true }), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
             if (resp.answers && resp.answers.length > 0) {
               confirmations++;

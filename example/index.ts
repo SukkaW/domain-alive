@@ -49,7 +49,7 @@ const resultCache = new Map();
 const registerableDomainResultCache = new Map();
 
 (async () => {
-  const customWhoisServersMapping = await (await fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json')).json() as any;
+  const customWhoisServersMapping = await (await fetch('https://cdn.jsdelivr.net/npm/whois-servers-list@latest/list.json')).json() as Record<string, string>;
 
   const isRegisterableDomainAlive = createRegisterableDomainAliveChecker({
     dns: {
