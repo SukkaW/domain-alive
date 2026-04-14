@@ -12,6 +12,7 @@ import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 import { domainToASCII } from 'url';
 import { extractErrorMessage } from 'foxts/extract-error-message';
+import type { DecodedPacket } from 'dns-packet';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -125,17 +126,17 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
           return { registerableDomain, alive: true };
         }
 
-        const resolve = shuffledDnsClients[attempts % shuffledDnsClients.length];
+        const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
         try {
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-          const resp = await asyncRetry(() => resolve(registerableDomain, 'NS'), dnsRetryOption);
+          const resp = (await asyncRetry(() => dnsClient.lookup(registerableDomain, 'NS'), dnsRetryOption)) as DecodedPacket;
           // if we found any NS records, the domain is alive
-          if (resp.answers.length > 0) {
+          if (resp.answers && resp.answers.length > 0) {
             confirmations++;
           }
         } catch (e) {
           const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
-          errorNsLog('[NS] %s error (%s) %s', domain, resolve.server, errorMessage);
+          errorNsLog('[NS] %s error (%s) %s', domain, dnsClient.server, errorMessage);
         } finally {
           attempts++;
 

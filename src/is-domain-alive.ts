@@ -10,6 +10,7 @@ import type { CacheImplementation } from './utils/cache';
 import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 import { domainToASCII } from 'url';
+import type { DecodedPacket } from 'dns-packet';
 
 const log = debug('domain-alive:is-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -100,17 +101,17 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             };
           }
 
-          const resolve = shuffledDnsClients[attempts % shuffledDnsClients.length];
+          const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = await asyncRetry(() => resolve(domain, 'A'), dnsRetryOption);
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, 'A'), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
-            if (resp.answers.length > 0) {
+            if (resp.answers && resp.answers.length > 0) {
               confirmations++;
             }
           } catch (e) {
             const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
-            errorLog('[A] %s error (%s) %s', domain, resolve.server, errorMessage);
+            errorLog('[A] %s error (%s) %s', domain, dnsClient.server, errorMessage);
           } finally {
             attempts++;
 
@@ -133,17 +134,17 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
             };
           }
 
-          const resolve = shuffledDnsClients[attempts % shuffledDnsClients.length];
+          const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = await asyncRetry(() => resolve(domain, 'AAAA'), dnsRetryOption);
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, 'AAAA'), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
-            if (resp.answers.length > 0) {
+            if (resp.answers && resp.answers.length > 0) {
               confirmations++;
             }
           } catch (e) {
             const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
-            errorLog('[AAAA] %s error (%s) %s', domain, resolve.server, errorMessage);
+            errorLog('[AAAA] %s error (%s) %s', domain, dnsClient.server, errorMessage);
           } finally {
             attempts++;
 

@@ -2,4 +2,6 @@ onlyBuiltDependencies:
   - '@swc/core'
 
 overrides:
-  eslint>chalk: npm:picocolors@^1.1.1
+  dohdec>crypto-random-string: npm:crypto-random-string@3.3.1
+patchedDependencies:
+  dohdec: patches/dohdec.patch

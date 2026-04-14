@@ -1,5 +1,5 @@
-import { DOHClient, TCPClient, UDPClient } from 'dns2';
-import type { DnsResolver } from 'dns2';
+import { DNSoverHTTPS, DNSoverTLS, DNSoverTCP, DNSoverUDP } from 'dohdec';
+import type { DNSutils } from 'dohdec';
 
 export interface DnsOptions {
 /**
@@ -52,7 +52,7 @@ export const defaultDnsServers: string[] = [
   'https://8.8.4.4'
 ];
 
-export function getDnsClients(servers: string[]): Array<DnsResolver & { server: string }> {
+export function getDnsClients(servers: string[]): Array<DNSutils & { server: string }> {
   return servers.map(dns => {
     const protocolIndex = dns.indexOf('://');
     const protocol = protocolIndex === -1 ? '' : dns.slice(0, protocolIndex);
@@ -60,7 +60,7 @@ export function getDnsClients(servers: string[]): Array<DnsResolver & { server: 
     const [server, _port] = dns.slice(protocolIndex + 3).split(':', 2);
     const port = _port ? Number.parseInt(_port, 10) : 0;
 
-    let client: DnsResolver;
+    let client: DNSutils;
 
     switch (protocol) {
       // case 'http':
@@ -70,19 +70,25 @@ export function getDnsClients(servers: string[]): Array<DnsResolver & { server: 
         if (!server.includes('/')) {
           u.pathname = '/dns-query';
         }
+        if (protocol === 'h2') {
+          u.protocol = 'https:';
+        }
 
-        client = DOHClient({ dns: u.href });
+        client = new DNSoverHTTPS({
+          http2: protocol === 'h2',
+          url: u.href
+        });
         break;
       }
       case 'tls':
-        client = TCPClient({ dns: server, protocol: 'tls:', port: port || 853 });
+        client = new DNSoverTLS({ host: server, port: port || 853 });
         break;
       case 'tcp':
-        client = TCPClient({ dns: server, protocol: 'tcp:', port: port || 53 });
+        client = new DNSoverTCP({ host: server, port: port || 53 });
         break;
       case '':
       case 'udp':
-        client = UDPClient({ dns: server, port: port || 53 });
+        client = new DNSoverUDP({ host: server, port: port || 53 });
         break;
       default:
         throw new TypeError('Unsupported DNS protocol "' + protocol + '" for DNS server "' + dns + '"');
