@@ -30,6 +30,8 @@ export interface DnsOptions {
   /** How many different DNS servers returning the satisfactory responses before the making the determination */
   confirmations?: number,
 
+  customFetchForDoH?: typeof fetch,
+
   /**
    * The specified dns servers will be shuffled before being attempted. On each attempt, the query would
    * be retried (determined by the retry* options) if any error occurs.
@@ -52,7 +54,7 @@ export const defaultDnsServers: string[] = [
   'https://8.8.4.4'
 ];
 
-export function getDnsClients(servers: string[]): Array<DNSutils & { server: string }> {
+export function getDnsClients(servers: string[], customFetch: typeof fetch = globalThis.fetch): Array<DNSutils & { server: string }> {
   return servers.map(dns => {
     const protocolIndex = dns.indexOf('://');
     const protocol = protocolIndex === -1 ? '' : dns.slice(0, protocolIndex);
@@ -76,7 +78,8 @@ export function getDnsClients(servers: string[]): Array<DNSutils & { server: str
 
         client = new DNSoverHTTPS({
           http2: protocol === 'h2',
-          url: u.href
+          url: u.href,
+          customFetch
         });
         break;
       }
