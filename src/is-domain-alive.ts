@@ -104,8 +104,9 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
           const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
-          // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'A', decode: true }), dnsRetryOption)) as DecodedPacket;
+            // @ts-expect-error -- force DoHClient to use wireformat over json format
+            // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'A', decode: true, json: false }), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
             if (resp.answers && resp.answers.length > 0) {
               confirmations++;
@@ -137,8 +138,9 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
           const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
-          // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'AAAA', decode: true }), dnsRetryOption)) as DecodedPacket;
+            // @ts-expect-error -- force DoHClient to use wireformat over json format
+            // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
+            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'AAAA', decode: true, json: false }), dnsRetryOption)) as DecodedPacket;
             // if we found any NS records, the domain is alive
             if (resp.answers && resp.answers.length > 0) {
               confirmations++;

@@ -129,8 +129,9 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
 
         const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
         try {
+          // @ts-expect-error -- force DoHClient to use wireformat over json format
           // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-          const resp = (await asyncRetry(() => dnsClient.lookup(registerableDomain, { rrtype: 'NS', decode: true }), dnsRetryOption)) as DecodedPacket;
+          const resp = (await asyncRetry(() => dnsClient.lookup(registerableDomain, { rrtype: 'NS', decode: true, json: false }), dnsRetryOption)) as DecodedPacket;
           // if we found any NS records, the domain is alive
           if (resp.answers && resp.answers.length > 0) {
             confirmations++;
