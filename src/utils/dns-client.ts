@@ -69,11 +69,10 @@ export function getDnsClients(servers: string[], customFetch: typeof fetch = glo
       case 'https':
       case 'h2': {
         const u = new URL(dns);
+        u.protocol = 'https:';
+
         if (!server.includes('/')) {
           u.pathname = '/dns-query';
-        }
-        if (protocol === 'h2') {
-          u.protocol = 'https:';
         }
 
         client = new DNSoverHTTPS({
