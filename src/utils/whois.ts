@@ -136,6 +136,7 @@ const cacheTldWhoisServer: Record<string, string> = {
 
 export class WhoisQueryError extends Error {
   name = 'WhoisQueryError';
+  // eslint-disable-next-line sukka/unicorn/custom-error-definition -- intentional flat options
   constructor(domain: string, rawError: unknown) {
     super(`WHOIS query failed for domain: ${domain}`);
     this.cause = rawError;
@@ -276,11 +277,8 @@ function walkWhois(whois: object): boolean {
         value && typeof value === 'object'
         && !Array.isArray(value) // only known array type are "Name Server", "Domain Status" and "text"
         // we can skip all these properties since we already match against __raw previously
-      ) {
-        if (walkWhois(value)) {
-          return true;
-        }
-        continue;
+        && walkWhois(value)) {
+        return true;
       }
     }
   }

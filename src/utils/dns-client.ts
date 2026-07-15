@@ -54,7 +54,7 @@ export const defaultDnsServers: string[] = [
   'https://8.8.4.4'
 ];
 
-export function getDnsClients(servers: string[], customFetch: typeof fetch = globalThis.fetch): Array<DNSutils & { server: string }> {
+export function getDnsClients(servers: string[], customFetch: typeof fetch = fetch): Array<DNSutils & { server: string }> {
   return servers.map(dns => {
     const protocolIndex = dns.indexOf('://');
     const protocol = protocolIndex === -1 ? '' : dns.slice(0, protocolIndex);
