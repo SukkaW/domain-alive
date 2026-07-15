@@ -57,5 +57,5 @@
     "typescript": "^6.0.3",
     "whoiser": "2.0.0-beta.8"
   },
-  "packageManager": "pnpm@10.34.5"
+  "packageManager": "pnpm@11.13.0"
 }

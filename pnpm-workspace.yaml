@@ -1,5 +1,6 @@
-onlyBuiltDependencies:
-  - '@swc/core'
+allowBuilds:
+  "@swc/core": true
+  unrs-resolver: true
 
 overrides:
   dohdec>crypto-random-string: npm:crypto-random-string@3.3.1
