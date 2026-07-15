@@ -88,72 +88,88 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
       // shuffle every time is called
       const shuffledDnsClients = shuffleArray(dnsClients, { copy: true });
 
-      {
-      // IPv4
+      /**
+       * Sweep through the (shuffled) DNS servers one-by-one for the given rrtype.
+       *
+       * On a per-server error (network failure, decode error, etc.) we immediately
+       * advance to the *next* server instead of retrying the same one. Only when an
+       * entire sweep fails to reach `maxConfirmations` *and* at least one server
+       * errored do we throw, letting the outer `asyncRetry` re-run the whole sweep
+       * with backoff. A clean sweep (every server answered, just not enough positive
+       * answers) resolves to its confirmation count without triggering a retry.
+       */
+      const sweep = async (rrtype: 'A' | 'AAAA'): Promise<number> => {
         let attempts = 0;
         let confirmations = 0;
+        let errored = 0;
 
         while (attempts < maxAttempts) {
           if (confirmations >= maxConfirmations) {
-            return {
-              registerableDomain: registerableDomainAliveResult.registerableDomain,
-              registerableDomainAlive: registerableDomainAliveResult.alive,
-              alive: true
-            };
+            break;
           }
 
           const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
           try {
             // @ts-expect-error -- force DoHClient to use wireformat over json format
             // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'A', decode: true, json: false }), dnsRetryOption)) as DecodedPacket;
-            // if we found any NS records, the domain is alive
+            const resp = (await dnsClient.lookup(domain, { rrtype, decode: true, json: false })) as DecodedPacket;
+            // if we found any answers, count it as one confirmation
             if (resp.answers && resp.answers.length > 0) {
               confirmations++;
             }
           } catch (e) {
+            errored++;
             const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
-            errorLog('[A] %s error (%s) %s', domain, dnsClient.server, errorMessage);
+            errorLog('[%s] %s error (%s) %s', rrtype, domain, dnsClient.server, errorMessage);
           } finally {
             attempts++;
 
-            log('[A] %s %d %d/%d', domain, confirmations, attempts, maxAttempts);
+            log('[%s] %s %d %d/%d', rrtype, domain, confirmations, attempts, maxAttempts);
           }
         }
+
+        // The sweep could not confirm and at least one server errored: the result is
+        // inconclusive rather than a genuine negative, so throw to let the outer
+        // `asyncRetry` re-run the whole rotation with backoff.
+        if (confirmations < maxConfirmations && errored > 0) {
+          throw new Error(`[${rrtype}] ${domain}: ${errored} server(s) errored, only ${confirmations}/${maxConfirmations} confirmation(s)`);
+        }
+
+        return confirmations;
+      };
+
+      // IPv4
+      let confirmations = 0;
+      try {
+        confirmations = await asyncRetry(() => sweep('A'), dnsRetryOption);
+      } catch (e) {
+        const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+        errorLog('[A] %s all servers failed after retries: %s', domain, errorMessage);
       }
 
-      {
+      if (confirmations >= maxConfirmations) {
+        return {
+          registerableDomain: registerableDomainAliveResult.registerableDomain,
+          registerableDomainAlive: registerableDomainAliveResult.alive,
+          alive: true
+        };
+      }
+
       // IPv6
-        let attempts = 0;
-        let confirmations = 0;
+      confirmations = 0;
+      try {
+        confirmations = await asyncRetry(() => sweep('AAAA'), dnsRetryOption);
+      } catch (e) {
+        const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
+        errorLog('[AAAA] %s all servers failed after retries: %s', domain, errorMessage);
+      }
 
-        while (attempts < maxAttempts) {
-          if (confirmations >= maxConfirmations) {
-            return {
-              registerableDomain: registerableDomainAliveResult.registerableDomain,
-              registerableDomainAlive: registerableDomainAliveResult.alive,
-              alive: true
-            };
-          }
-
-          const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
-          try {
-            // @ts-expect-error -- force DoHClient to use wireformat over json format
-            // eslint-disable-next-line no-await-in-loop -- attempt servers one by one
-            const resp = (await asyncRetry(() => dnsClient.lookup(domain, { rrtype: 'AAAA', decode: true, json: false }), dnsRetryOption)) as DecodedPacket;
-            // if we found any NS records, the domain is alive
-            if (resp.answers && resp.answers.length > 0) {
-              confirmations++;
-            }
-          } catch (e) {
-            const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
-            errorLog('[AAAA] %s error (%s) %s', domain, dnsClient.server, errorMessage);
-          } finally {
-            attempts++;
-
-            log('[AAAA] %s %d %d/%d', domain, confirmations, attempts, maxAttempts);
-          }
-        }
+      if (confirmations >= maxConfirmations) {
+        return {
+          registerableDomain: registerableDomainAliveResult.registerableDomain,
+          registerableDomainAlive: registerableDomainAliveResult.alive,
+          alive: true
+        };
       }
 
       // neither A nor AAAA records found
