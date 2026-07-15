@@ -38,24 +38,24 @@
   "license": "MIT",
   "dependencies": {
     "debug": "4.4.1",
-    "foxts": "^5.4.0",
-    "tldts": "^7.0.28"
+    "foxts": "^5.8.0",
+    "tldts": "^7.4.8"
   },
   "devDependencies": {
-    "@eslint-sukka/node": "^8.9.2",
+    "@eslint-sukka/node": "^8.13.5",
     "@swc-node/register": "^1.11.1",
     "@types/debug": "^4.1.13",
     "@types/dns-packet": "^5.6.5",
-    "@types/node": "^24.12.2",
+    "@types/node": "^24.13.3",
     "bumpp": "^10.4.1",
-    "bunchee": "^6.10.0",
+    "bunchee": "^6.12.0",
     "dohdec": "^8.0.0",
-    "eslint": "^10.2.0",
-    "eslint-config-sukka": "^8.9.2",
-    "eslint-formatter-sukka": "^8.9.2",
+    "eslint": "^10.7.0",
+    "eslint-config-sukka": "^8.13.5",
+    "eslint-formatter-sukka": "^8.13.5",
     "http2-wrapper": "^2.2.1",
-    "typescript": "^6.0.2",
+    "typescript": "^6.0.3",
     "whoiser": "2.0.0-beta.8"
   },
-  "packageManager": "pnpm@10.33.0"
+  "packageManager": "pnpm@10.34.5"
 }
