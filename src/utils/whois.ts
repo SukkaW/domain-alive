@@ -245,6 +245,9 @@ const whoisNotFoundKeywordTest = createKeywordFilter([
   // 'pendingdelete',
   ' has been blocked by '
 ]);
+const RE_CONSECUTIVE_BLANK = /[\t ]+/g;
+const RE_LINE_BREAK = /\r?\n/;
+
 // whois server can redirect, so whoiser might/will get info from multiple whois servers
 // some servers (like TLD whois servers) might have cached/outdated results
 // we can only make sure a domain is alive once all response from all whois servers demonstrate so
@@ -252,9 +255,10 @@ function walkWhois(whois: object): boolean {
   let whoisIsEmpty = true;
 
   if ('__raw' in whois && typeof whois.__raw === 'string') {
-    const lines = whois.__raw.trim().toLowerCase().replaceAll(/[\t ]+/g, ' ').split(/\r?\n/);
+    const lines = whois.__raw.trim().toLowerCase().replaceAll(RE_CONSECUTIVE_BLANK, ' ').split(RE_LINE_BREAK);
 
-    for (const line of lines) {
+    for (let i = 0, len = lines.length; i < len; i++) {
+      const line = lines[i];
       if (whoisNotFoundKeywordTest(line)) {
         log('[whois] line %s, %O', line, whois);
         return false;
