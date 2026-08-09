@@ -26,7 +26,7 @@
     "build": "bunchee --no-sourcemap",
     "node": "node --require=@swc-node/register",
     "prerelease": "pnpm run lint && pnpm run build",
-    "release": "bumpp -r --all --commit \"release: %s\" --tag \"%s\""
+    "release": "bumpp --install -r --all --commit \"release: %s\" --tag \"%s\""
   },
   "keywords": [
     "DNS",
