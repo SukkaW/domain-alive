@@ -18,9 +18,38 @@ import { createDomainAliveChecker } from 'domain-alive';
 const isDomainAlive = createDomainAliveChecker();
 
 (async () => {
-  await isDomainAlive('example.com'); // true
+  await isDomainAlive('www.example.com');
+  // {
+  //   registerableDomain: 'example.com',
+  //   registerableDomainAlive: true,
+  //   alive: true,
+  //   reason: 'A_RECORDS'
+  // }
 })();
 ```
+
+Every result includes a machine-readable `reason` code explaining the final `alive` value. The exported `DOMAIN_ALIVE_REASONS` object can be used instead of comparing raw strings, and `DOMAIN_ALIVE_REASON_MESSAGES` maps every code to a human-readable description:
+
+```ts
+import { DOMAIN_ALIVE_REASON_MESSAGES } from 'domain-alive';
+
+const result = await isDomainAlive('www.example.com');
+console.log(DOMAIN_ALIVE_REASON_MESSAGES[result.reason]);
+// The domain has confirmed A records.
+```
+
+| Reason | Meaning |
+| --- | --- |
+| `INVALID_DOMAIN` | No registerable domain could be extracted. |
+| `NS_RECORDS` | The registerable domain has confirmed NS records. |
+| `WHOIS_REGISTERED` | WHOIS/RDAP data indicates that the registerable domain is registered. |
+| `WHOIS_NOT_REGISTERED` | WHOIS/RDAP data indicates that the registerable domain is not registered. |
+| `WHOIS_UNSUPPORTED` | WHOIS/RDAP is unsupported for the TLD; the registerable domain is assumed alive. |
+| `WHOIS_ERROR` | The WHOIS/RDAP lookup failed; `alive` follows the `whoisErrorCountAsAlive` option. |
+| `A_RECORDS` | The domain has confirmed A records. |
+| `AAAA_RECORDS` | The domain has confirmed AAAA records. |
+| `NO_ADDRESS_RECORDS` | The domain has no confirmed A or AAAA records. |
+| `DNS_ERROR` | DNS resolver errors prevented A/AAAA confirmation. |
 
 You can easily customize the dns servers (UDP, TCP, DoH, DoT are supported), pre-cached/pre-populated `Domain TLD -> WHOIS/RDAP server` mapping, retry behaviors, etc., see "Advanced Usage" section below and the TypeScript definitions for all the options.
 
@@ -169,4 +198,3 @@ const options = {
     <img src="https://sponsor.cdn.skk.moe/sponsors.svg"/>
   </a>
 </p>
-

@@ -11,6 +11,8 @@ import { createAsyncMutex } from './utils/mutex';
 import debug from 'debug';
 import { domainToASCII } from 'url';
 import type { DecodedPacket } from 'dns-packet';
+import { DOMAIN_ALIVE_REASON_MESSAGES, DOMAIN_ALIVE_REASONS } from './reason';
+import type { DomainAliveReason } from './reason';
 
 const log = debug('domain-alive:is-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -23,13 +25,16 @@ export interface DomainAliveOptions extends RegisterableDomainAliveOptions {
 export interface DomainAliveResult {
   readonly registerableDomain: string | null,
   readonly registerableDomainAlive: boolean,
-  readonly alive: boolean
+  readonly alive: boolean,
+  /** Machine-readable explanation for the `alive` value. */
+  readonly reason: DomainAliveReason
 }
 
 const sharedNullishResult: DomainAliveResult = Object.freeze({
   registerableDomain: null,
   registerableDomainAlive: false,
-  alive: false
+  alive: false,
+  reason: DOMAIN_ALIVE_REASONS.INVALID_DOMAIN
 });
 
 export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
@@ -71,7 +76,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
       return {
         registerableDomain: registerableDomainAliveResult.registerableDomain,
         registerableDomainAlive: false,
-        alive: false
+        alive: false,
+        reason: registerableDomainAliveResult.reason
       };
     }
 
@@ -80,7 +86,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
       return {
         registerableDomain: registerableDomainAliveResult.registerableDomain,
         registerableDomainAlive: registerableDomainAliveResult.alive,
-        alive: registerableDomainAliveResult.alive
+        alive: registerableDomainAliveResult.alive,
+        reason: registerableDomainAliveResult.reason
       };
     }
 
@@ -140,9 +147,11 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
 
       // IPv4
       let confirmations = 0;
+      let dnsErrored = false;
       try {
         confirmations = await asyncRetry(() => sweep('A'), dnsRetryOption);
       } catch (e) {
+        dnsErrored = true;
         const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
         errorLog('[A] %s all servers failed after retries: %s', domain, errorMessage);
       }
@@ -151,7 +160,8 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
         return {
           registerableDomain: registerableDomainAliveResult.registerableDomain,
           registerableDomainAlive: registerableDomainAliveResult.alive,
-          alive: true
+          alive: true,
+          reason: DOMAIN_ALIVE_REASONS.A_RECORDS
         };
       }
 
@@ -160,6 +170,7 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
       try {
         confirmations = await asyncRetry(() => sweep('AAAA'), dnsRetryOption);
       } catch (e) {
+        dnsErrored = true;
         const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
         errorLog('[AAAA] %s all servers failed after retries: %s', domain, errorMessage);
       }
@@ -168,17 +179,20 @@ export function createDomainAliveChecker(options: DomainAliveOptions = {}) {
         return {
           registerableDomain: registerableDomainAliveResult.registerableDomain,
           registerableDomainAlive: registerableDomainAliveResult.alive,
-          alive: true
+          alive: true,
+          reason: DOMAIN_ALIVE_REASONS.AAAA_RECORDS
         };
       }
 
-      // neither A nor AAAA records found
-      deadLog('[dead] %s %s', '(A/AAAA)', domain);
+      const reason = dnsErrored ? DOMAIN_ALIVE_REASONS.DNS_ERROR : DOMAIN_ALIVE_REASONS.NO_ADDRESS_RECORDS;
+
+      deadLog('[%s] %s: %s', reason, domain, DOMAIN_ALIVE_REASON_MESSAGES[reason]);
 
       return {
         registerableDomain: registerableDomainAliveResult.registerableDomain,
         registerableDomainAlive: registerableDomainAliveResult.alive,
-        alive: false
+        alive: false,
+        reason
       };
     }));
   };

@@ -5,6 +5,7 @@ import { whoisDomain as whoiserDomain } from 'whoiser';
 import { createRetrieKeywordFilter as createKeywordFilter } from 'foxts/retrie';
 import { extractErrorMessage } from 'foxts/extract-error-message';
 import debug from 'debug';
+import { DOMAIN_ALIVE_REASONS } from '../reason';
 
 const log = debug('domain-alive:whois');
 const errorLog = debug('domain-alive:error:whois');
@@ -143,6 +144,15 @@ export class WhoisQueryError extends Error {
   }
 }
 
+export interface DomainRegistrationResult {
+  readonly registered: boolean,
+  readonly reason:
+    | typeof DOMAIN_ALIVE_REASONS.WHOIS_REGISTERED
+    | typeof DOMAIN_ALIVE_REASONS.WHOIS_NOT_REGISTERED
+    | typeof DOMAIN_ALIVE_REASONS.WHOIS_UNSUPPORTED
+    | typeof DOMAIN_ALIVE_REASONS.WHOIS_ERROR
+}
+
 const whoiserTLDNotSupportedSymbol = Symbol('"whoiser" library returns "TLD not supported" error');
 const whoiserNoWhoisSymbol = Symbol('"whoiser" library returns "No WHOIS data found" error');
 
@@ -154,7 +164,7 @@ const whoiserNoWhoisSymbol = Symbol('"whoiser" library returns "No WHOIS data fo
  * `require('node:url').domainToASCII` API & `tldts` library, which we also use in the
  * `isRegisterableDomainAlive` function.
  */
-export async function domainHasBeenRegistered(registerableDomain: string, options: WhoisOptions = {}): Promise<boolean> {
+export async function getDomainRegistrationResult(registerableDomain: string, options: WhoisOptions = {}): Promise<DomainRegistrationResult> {
   const tld = getPublicSuffix(registerableDomain, getIcannTldOptions);
   if (!tld) {
     throw new TypeError('[domain-alive] Can\'t determine the TLD of the domain: "' + registerableDomain + '", thus we can\'t run WHOIS query');
@@ -205,22 +215,39 @@ export async function domainHasBeenRegistered(registerableDomain: string, option
     const errorMessage = extractErrorMessage(e, true, false) || 'unknown error';
     errorLog('[whois] %s %s', registerableDomain, errorMessage);
 
-    return whoisErrorCountAsAlive;
+    return {
+      registered: whoisErrorCountAsAlive,
+      reason: DOMAIN_ALIVE_REASONS.WHOIS_ERROR
+    };
   }
 
   if (whois === whoiserTLDNotSupportedSymbol) {
     // If TLD doesn't support WHOIS/RDAP, we have no choice but to assume it's registered
-    return true;
+    return {
+      registered: true,
+      reason: DOMAIN_ALIVE_REASONS.WHOIS_UNSUPPORTED
+    };
   }
 
   if (whois === whoiserNoWhoisSymbol) {
     // If "No WHOIS data found" is returned, the domain must not exist
-    return false;
+    return {
+      registered: false,
+      reason: DOMAIN_ALIVE_REASONS.WHOIS_NOT_REGISTERED
+    };
   }
 
   // TODO: due to https://github.com/LayeredStudio/whoiser/issues/117, we can't trust the "whoiser" parsed object
   // Instead we made our own naive detection based on raw output
-  return walkWhois(whois);
+  const registered = walkWhois(whois);
+  return {
+    registered,
+    reason: registered ? DOMAIN_ALIVE_REASONS.WHOIS_REGISTERED : DOMAIN_ALIVE_REASONS.WHOIS_NOT_REGISTERED
+  };
+}
+
+export async function domainHasBeenRegistered(registerableDomain: string, options: WhoisOptions = {}): Promise<boolean> {
+  return (await getDomainRegistrationResult(registerableDomain, options)).registered;
 }
 
 // TODO: this is a workaround for https://github.com/LayeredStudio/whoiser/issues/117

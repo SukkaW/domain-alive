@@ -1,6 +1,6 @@
 import { getDomain } from 'tldts';
 import { defaultDnsServers, getDnsClients } from './utils/dns-client';
-import { domainHasBeenRegistered } from './utils/whois';
+import { getDomainRegistrationResult } from './utils/whois';
 import type { WhoisOptions } from './utils/whois';
 import type { DnsOptions } from './utils/dns-client';
 import { shuffleArray } from 'foxts/shuffle-array';
@@ -13,6 +13,8 @@ import debug from 'debug';
 import { domainToASCII } from 'url';
 import { extractErrorMessage } from 'foxts/extract-error-message';
 import type { DecodedPacket } from 'dns-packet';
+import { DOMAIN_ALIVE_REASON_MESSAGES, DOMAIN_ALIVE_REASONS } from './reason';
+import type { RegisterableDomainAliveReason } from './reason';
 
 const log = debug('domain-alive:is-registerable-domain-alive');
 const deadLog = debug('domain-alive:dead-domain');
@@ -41,13 +43,16 @@ export interface RegisterableDomainAliveOptions {
 
 export interface RegisterableDomainAliveResult {
   readonly registerableDomain: string | null,
-  readonly alive: boolean
+  readonly alive: boolean,
+  /** Machine-readable explanation for the `alive` value. */
+  readonly reason: RegisterableDomainAliveReason
 }
 
 // a shared null response to decrease GC pressure and increase performance
 const sharedNullResponse: RegisterableDomainAliveResult = Object.freeze({
   registerableDomain: null,
-  alive: false
+  alive: false,
+  reason: DOMAIN_ALIVE_REASONS.INVALID_DOMAIN
 });
 
 /**
@@ -122,11 +127,7 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
       let attempts = 0;
       let confirmations = 0;
 
-      while (attempts < maxAttempts) {
-        if (confirmations >= maxConfirmations) {
-          return { registerableDomain, alive: true };
-        }
-
+      while (attempts < maxAttempts && confirmations < maxConfirmations) {
         const dnsClient = shuffledDnsClients[attempts % shuffledDnsClients.length];
         try {
           // @ts-expect-error -- force DoHClient to use wireformat over json format
@@ -146,6 +147,14 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
         }
       }
 
+      if (confirmations >= maxConfirmations) {
+        return {
+          registerableDomain,
+          alive: true,
+          reason: DOMAIN_ALIVE_REASONS.NS_RECORDS
+        };
+      }
+
       // This can only be reached only if we have tried enough DNS servers and not enough satisfactory answers were found
       // In this case, we move on to Step 2.
 
@@ -154,22 +163,30 @@ tencentcloud.com.    86400   IN  SOA ns-tel1.qq.com. webmaster.qq.com. 165111089
       // Here is NS query for "tencentcloud.com" as an example
 
       try {
-        const registered = await domainHasBeenRegistered(registerableDomain, whoisOptions);
+        const registrationResult = await getDomainRegistrationResult(registerableDomain, whoisOptions);
+        const { registered } = registrationResult;
 
         log('[whois] %s %s', registerableDomain, registered);
 
         if (!registered) {
-          deadLog('[dead] %s %s', '(apex)', registerableDomain);
+          deadLog(
+            '[%s] %s: %s',
+            registrationResult.reason,
+            registerableDomain,
+            DOMAIN_ALIVE_REASON_MESSAGES[registrationResult.reason]
+          );
         }
 
         return {
           registerableDomain,
-          alive: registered
+          alive: registered,
+          reason: registrationResult.reason
         };
       } catch {
         return {
           registerableDomain,
-          alive: whoisOptions.whoisErrorCountAsAlive ?? true
+          alive: whoisOptions.whoisErrorCountAsAlive ?? true,
+          reason: DOMAIN_ALIVE_REASONS.WHOIS_ERROR
         };
       }
     }));
