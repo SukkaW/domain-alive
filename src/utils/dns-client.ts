@@ -1,6 +1,17 @@
 import { DNSoverHTTPS, DNSoverTLS, DNSoverTCP, DNSoverUDP } from 'dohdec';
 import type { DNSutils } from 'dohdec';
 
+/**
+ * The minimum interface required by Undici's `dispatcher` request option.
+ *
+ * Keep this structural instead of importing `Dispatcher` from `undici-types`:
+ * Undici 7 and 8 use incompatible handler types even though their Agent
+ * implementations are both valid at this runtime boundary.
+ */
+export interface DoHDispatcher {
+  dispatch(...args: never[]): boolean
+}
+
 export interface DnsOptions {
 /**
  * Suported formats:
@@ -33,6 +44,14 @@ export interface DnsOptions {
   customFetchForDoH?: typeof fetch,
 
   /**
+   * Custom Undici Agent/Dispatcher for DNS-over-HTTPS requests.
+   *
+   * Supplying this also prevents dohdec from constructing its own Agent. The
+   * caller owns the dispatcher and remains responsible for closing it.
+   */
+  customAgentForDoH?: DoHDispatcher,
+
+  /**
    * The specified dns servers will be shuffled before being attempted. On each attempt, the query would
    * be retried (determined by the retry* options) if any error occurs.
    *
@@ -54,7 +73,11 @@ export const defaultDnsServers: string[] = [
   'https://8.8.4.4'
 ];
 
-export function getDnsClients(servers: string[], customFetch: typeof fetch = fetch): Array<DNSutils & { server: string }> {
+export function getDnsClients(
+  servers: string[],
+  customFetch: typeof fetch = fetch,
+  customAgent?: DoHDispatcher
+): Array<DNSutils & { server: string }> {
   return servers.map(dns => {
     const protocolIndex = dns.indexOf('://');
     const protocol = protocolIndex === -1 ? '' : dns.slice(0, protocolIndex);
@@ -78,7 +101,11 @@ export function getDnsClients(servers: string[], customFetch: typeof fetch = fet
         client = new DNSoverHTTPS({
           http2: protocol === 'h2',
           url: u.href,
-          customFetch
+          customFetch,
+          // dohdec uses undici-types@7, whose Dispatcher type is not
+          // structurally compatible with Undici 8 even though both satisfy
+          // the runtime dispatch contract.
+          agent: customAgent as NonNullable<ConstructorParameters<typeof DNSoverHTTPS>[0]>['agent']
         });
         break;
       }

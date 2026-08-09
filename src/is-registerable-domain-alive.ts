@@ -74,7 +74,8 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
     confirmations: maxConfirmations = 2,
     maxAttempts: _maxAttempts = dnsServers.length,
     retryCount: retries = 3, retryMinTimeout = 1000, retryFactor = 2, retryMaxTimeout = 16000,
-    customFetchForDoH
+    customFetchForDoH,
+    customAgentForDoH
   } = dnsOptions;
 
   // each server get atmost one attempt, only less no more
@@ -84,7 +85,7 @@ export function createRegisterableDomainAliveChecker(options: RegisterableDomain
 
   const mutex = createAsyncMutex<RegisterableDomainAliveResult>();
 
-  const dnsClients = getDnsClients(dnsServers, customFetchForDoH);
+  const dnsClients = getDnsClients(dnsServers, customFetchForDoH, customAgentForDoH);
 
   return async function isRegisterableDomainAlive(domain: string): Promise<RegisterableDomainAliveResult> {
     domain = domainToASCII(domain);

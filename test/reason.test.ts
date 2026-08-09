@@ -15,6 +15,12 @@ const RR_TYPE = {
   AAAA: 28
 } as const;
 
+const mockDoHAgent = {
+  dispatch() {
+    throw new Error('The mock fetch should handle every DoH request');
+  }
+};
+
 function getQuestionType(query: Buffer): number {
   let offset = 12;
   while (query[offset] !== 0) {
@@ -76,7 +82,8 @@ function createDnsOptions(customFetchForDoH: typeof fetch) {
     confirmations: 1,
     maxAttempts: 1,
     retryCount: 0,
-    customFetchForDoH
+    customFetchForDoH,
+    customAgentForDoH: mockDoHAgent
   };
 }
 
@@ -93,7 +100,9 @@ test('exports one human-readable message for every reason', () => {
 });
 
 test('reports invalid domains', async () => {
-  const result = await createDomainAliveChecker()('');
+  const result = await createDomainAliveChecker({
+    dns: { customAgentForDoH: mockDoHAgent }
+  })('');
 
   assert.deepEqual(result, {
     registerableDomain: null,
@@ -123,7 +132,10 @@ test('propagates a dead registerable-domain reason', async () => {
       reason: DOMAIN_ALIVE_REASONS.WHOIS_NOT_REGISTERED
     }]
   ]);
-  const result = await createDomainAliveChecker({ registerableDomainResultCache })(domain);
+  const result = await createDomainAliveChecker({
+    dns: { customAgentForDoH: mockDoHAgent },
+    registerableDomainResultCache
+  })(domain);
 
   assert.deepEqual(result, {
     registerableDomain: 'example.com',

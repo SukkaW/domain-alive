@@ -38,18 +38,18 @@ console.log(DOMAIN_ALIVE_REASON_MESSAGES[result.reason]);
 // The domain has confirmed A records.
 ```
 
-| Reason | Meaning |
-| --- | --- |
-| `INVALID_DOMAIN` | No registerable domain could be extracted. |
-| `NS_RECORDS` | The registerable domain has confirmed NS records. |
-| `WHOIS_REGISTERED` | WHOIS/RDAP data indicates that the registerable domain is registered. |
-| `WHOIS_NOT_REGISTERED` | WHOIS/RDAP data indicates that the registerable domain is not registered. |
-| `WHOIS_UNSUPPORTED` | WHOIS/RDAP is unsupported for the TLD; the registerable domain is assumed alive. |
-| `WHOIS_ERROR` | The WHOIS/RDAP lookup failed; `alive` follows the `whoisErrorCountAsAlive` option. |
-| `A_RECORDS` | The domain has confirmed A records. |
-| `AAAA_RECORDS` | The domain has confirmed AAAA records. |
-| `NO_ADDRESS_RECORDS` | The domain has no confirmed A or AAAA records. |
-| `DNS_ERROR` | DNS resolver errors prevented A/AAAA confirmation. |
+| Reason                 | Meaning                                                                            |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| `INVALID_DOMAIN`       | No registerable domain could be extracted.                                         |
+| `NS_RECORDS`           | The registerable domain has confirmed NS records.                                  |
+| `WHOIS_REGISTERED`     | WHOIS/RDAP data indicates that the registerable domain is registered.              |
+| `WHOIS_NOT_REGISTERED` | WHOIS/RDAP data indicates that the registerable domain is not registered.          |
+| `WHOIS_UNSUPPORTED`    | WHOIS/RDAP is unsupported for the TLD; the registerable domain is assumed alive.   |
+| `WHOIS_ERROR`          | The WHOIS/RDAP lookup failed; `alive` follows the `whoisErrorCountAsAlive` option. |
+| `A_RECORDS`            | The domain has confirmed A records.                                                |
+| `AAAA_RECORDS`         | The domain has confirmed AAAA records.                                             |
+| `NO_ADDRESS_RECORDS`   | The domain has no confirmed A or AAAA records.                                     |
+| `DNS_ERROR`            | DNS resolver errors prevented A/AAAA confirmation.                                 |
 
 You can easily customize the dns servers (UDP, TCP, DoH, DoT are supported), pre-cached/pre-populated `Domain TLD -> WHOIS/RDAP server` mapping, retry behaviors, etc., see "Advanced Usage" section below and the TypeScript definitions for all the options.
 
@@ -64,6 +64,26 @@ const isDomainAlive = createDomainAliveChcker({
   registerableDomainResultCache: new Map()
 });
 ```
+
+### Custom DNS-over-HTTPS Agent
+
+You can provide an Undici Agent/Dispatcher for DNS-over-HTTPS requests.
+
+```ts
+import { Agent } from 'undici';
+import { createDomainAliveChecker } from 'domain-alive';
+
+const dohAgent = new Agent({ allowH2: false });
+const isDomainAlive = createDomainAliveChecker({
+  dns: {
+    customAgentForDoH: dohAgent
+  }
+});
+```
+
+The caller owns a supplied Agent and is responsible for closing it when it is
+no longer used. The same Agent is shared by the registerable-domain and full
+domain checkers.
 
 ## Detect Algorithm
 
