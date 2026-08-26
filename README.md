@@ -56,10 +56,10 @@ You can easily customize the dns servers (UDP, TCP, DoH, DoT are supported), pre
 You can also bring a cache implementation as well:
 
 ```ts
-import { createDomainAliveChcker } from 'domain-alive';
+import { createDomainAliveChecker } from 'domain-alive';
 
 // There are two separate caches: one for the overall domain alive status and one for the alive status of the "registerable part" of the domain.
-const isDomainAlive = createDomainAliveChcker({
+const isDomainAlive = createDomainAliveChecker({
   resultCache: new Map(),
   registerableDomainResultCache: new Map()
 });
